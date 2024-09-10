@@ -20,3 +20,6 @@
 - choose ***Pipewire Equalizer*** as output
 
 ![screenshot](screenshot.png)
+
+### Credits
+Thanks to [demonich](https://github.com/demonich)
