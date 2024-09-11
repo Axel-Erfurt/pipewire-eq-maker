@@ -8,7 +8,8 @@
 ### Usage
 ```python3 pw_eq_maker.py```
 
-- adjust the values
+- adjust the slider values for gain
+- set the Q-Factor above the slider
 - choose ***Save*** from the menu at the headerbar
 
 >a file named sink-eq10.conf will be created in the script folder
