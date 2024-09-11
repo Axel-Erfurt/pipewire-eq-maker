@@ -20,7 +20,7 @@
 - open your sound settings app
 - choose ***Pipewire Equalizer*** as output
 
-![screenshot](screenshot.png)
+![screenshot](https://github.com/Axel-Erfurt/pipewire-eq-maker/blob/main/screenshot.png?raw=true))
 
 ### Credits
 Thanks to [demonich](https://github.com/demonich)
