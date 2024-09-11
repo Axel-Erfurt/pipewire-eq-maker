@@ -23,14 +23,26 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         self.connect("destroy", Gtk.ApplicationWindow.close)
         self.set_title("Application")
         #self.set_default_size(680, 420)
-        
+
+        self.out_text = """Preamp: -6 dB
+Filter 1: ON LSC Fc 32 Hz Gain val_1 dB Q q_factor_1
+Filter 2: ON PK Fc 63 Hz Gain val_2 dB Q q_factor_2
+Filter 3: ON PK Fc 125 Hz Gain val_3 dB Q q_factor_3
+Filter 4: ON PK Fc 250 Hz Gain val_4 dB Q q_factor_4
+Filter 5: ON PK Fc 500 Hz Gain val_5 dB Q q_factor_5
+Filter 6: ON PK Fc 1000 Hz Gain val_6 dB Q q_factor_6
+Filter 7: ON PK Fc 2000 Hz Gain val_7 dB Q q_factor_7
+Filter 8: ON PK Fc 4000 Hz Gain val_8 dB Q q_factor_8
+Filter 9: ON PK Fc 8000 Hz Gain val_9 dB Q q_factor_9
+Filter 10: ON HSC Fc 16000 Hz Gain val_last dB Q q_factor_last"""
+
         self.value_list = []
         for i in range(1, 12):
             self.value_list.append("0.0")
 
-        grid = Gtk.Grid(row_spacing = 30, column_spacing = 30, 
+        grid = Gtk.Grid(row_spacing = 30, column_spacing = 20, 
                         hexpand = True, margin_left = 20, 
-                        margin_right = 20)
+                        margin_right = 20, margin_top = 10)
         self.add(grid)
 
         menubutton = Gtk.MenuButton()
@@ -48,37 +60,43 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         self.set_titlebar(self.headerbar)
         
         self.hz_list = ["32Hz", "63Hz", "125Hz", "250Hz", "500Hz", "1kHz", "2kHz", "4kHz", "8kHz", "16kHz", "Boost"]
+        self.qfactor_list = ["0.7", "0.5", "2.0", "1.0", "1.0", "2.0", "3.0", "2.0", "1.0", "0.7", "1.0"]
+
+        print(self.qfactor_list)
+        
+        for i in range(1, 11):
+        
+            q_entry = Gtk.Entry(tooltip_markup="<b>Q-Factor</b>\nchange value for q-factor\n(use point e.g. 2.2)", width_chars=4)
+            q_entry.set_text(self.qfactor_list[i-1])
+            q_entry.connect("changed", self.qf_changed, i)
+            grid.attach(q_entry, i, 0, 1, 1)
         
         for i in range(1, 12):
+            
             sld = Gtk.Scale.new_with_range(1, -12.0, 12.0, 0.1)
             sld.set_inverted(True)
             sld.set_value(0)
             sld.set_name(f"sld_{i}")
             sld.connect("value-changed", self.val_changed, i)
             grid.attach(sld, i, 1, 1, 10)
+            
             lbl = Gtk.Label(label=self.hz_list[i - 1])
-            lbl.set_name((f"lbl_{i}"))
+            lbl.set_name(f"lbl_{i}")
+            sld.set_tooltip_text(f"Gain Value for {self.hz_list[i - 1]}")
             grid.attach(lbl, i, 11, 1, 1)
         
         self.lbl = Gtk.Label(label = "Info", justify = 2)
         grid.attach(self.lbl, 1, 12, 11, 1)
+
         
-        self.out_text = """Preamp: -6 dB
-Filter 1: ON LSC Fc 32 Hz Gain val_1 dB Q 0.70
-Filter 2: ON PK Fc 63 Hz Gain val_2 dB Q 0.50
-Filter 3: ON PK Fc 125 Hz Gain val_3 dB Q 2.04
-Filter 4: ON PK Fc 250 Hz Gain val_4 dB Q 0.87
-Filter 5: ON PK Fc 500 Hz Gain val_5 dB Q 1.83
-Filter 6: ON PK Fc 1000 Hz Gain val_6 dB Q 1.02
-Filter 7: ON PK Fc 2000 Hz Gain val_7 dB Q 3.94
-Filter 8: ON PK Fc 4000 Hz Gain val_8 dB Q 3.02
-Filter 9: ON PK Fc 8000 Hz Gain val_9 dB Q 2.24
-Filter 10: ON HSC Fc 16000 Hz Gain val_10 dB Q 0.70"""
+    def qf_changed(self, wdg, i, *args):
+        qf = wdg.get_text()
+        self.qfactor_list[i - 1] = f"{qf}"
+        #print(self.qfactor_list)
         
     def val_changed(self, wdg, i, *args):
         v = wdg.get_value()
         name = wdg.get_name()
-        #print(f"{name} value: {v}")
         self.lbl.set_text(f"{self.hz_list[i-1]}: {v}db")
         self.value_list[i - 1] = f"{v}"
         
@@ -121,7 +139,20 @@ class Application(Gtk.Application):
                             .replace("val_7", self.window.value_list[6]) \
                             .replace("val_8", self.window.value_list[7]) \
                             .replace("val_9", self.window.value_list[8]) \
-                            .replace("val_10", self.window.value_list[9])
+                            .replace("val_last", self.window.value_list[9]) \
+                            .replace("q_factor_1", self.window.qfactor_list[0]) \
+                            .replace("q_factor_2", self.window.qfactor_list[1]) \
+                            .replace("q_factor_3", self.window.qfactor_list[2]) \
+                            .replace("q_factor_4", self.window.qfactor_list[3]) \
+                            .replace("q_factor_5", self.window.qfactor_list[4]) \
+                            .replace("q_factor_6", self.window.qfactor_list[5]) \
+                            .replace("q_factor_7", self.window.qfactor_list[6]) \
+                            .replace("q_factor_8", self.window.qfactor_list[7]) \
+                            .replace("q_factor_9", self.window.qfactor_list[8]) \
+                            .replace("q_factor_last", self.window.qfactor_list[9])
+                            
+        print(self.window.out_text)
+                            
         with open("sink-eq10.txt", "w") as f:
             f.write(self.window.out_text)
             
