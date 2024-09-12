@@ -25,16 +25,16 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         #self.set_default_size(680, 420)
 
         self.out_text = """Preamp: -6 dB
-Filter 1: ON LSC Fc 32 Hz Gain val_1 dB Q q_factor_1
-Filter 2: ON PK Fc 63 Hz Gain val_2 dB Q q_factor_2
-Filter 3: ON PK Fc 125 Hz Gain val_3 dB Q q_factor_3
-Filter 4: ON PK Fc 250 Hz Gain val_4 dB Q q_factor_4
-Filter 5: ON PK Fc 500 Hz Gain val_5 dB Q q_factor_5
-Filter 6: ON PK Fc 1000 Hz Gain val_6 dB Q q_factor_6
-Filter 7: ON PK Fc 2000 Hz Gain val_7 dB Q q_factor_7
-Filter 8: ON PK Fc 4000 Hz Gain val_8 dB Q q_factor_8
-Filter 9: ON PK Fc 8000 Hz Gain val_9 dB Q q_factor_9
-Filter 10: ON HSC Fc 16000 Hz Gain val_last dB Q q_factor_last"""
+Filter 1: ON LSC Fc freq_1 Hz Gain val_1 dB Q q_factor_1
+Filter 2: ON PK Fc freq_2 Hz Gain val_2 dB Q q_factor_2
+Filter 3: ON PK Fc freq_3 Hz Gain val_3 dB Q q_factor_3
+Filter 4: ON PK Fc freq_4 Hz Gain val_4 dB Q q_factor_4
+Filter 5: ON PK Fc freq_5 Hz Gain val_5 dB Q q_factor_5
+Filter 6: ON PK Fc freq_6 Hz Gain val_6 dB Q q_factor_6
+Filter 7: ON PK Fc freq_7 Hz Gain val_7 dB Q q_factor_7
+Filter 8: ON PK Fc freq_8 Hz Gain val_8 dB Q q_factor_8
+Filter 9: ON PK Fc freq_9 Hz Gain val_9 dB Q q_factor_9
+Filter 10: ON HSC Fc freq_last Hz Gain val_last dB Q q_factor_last"""
 
         self.value_list = []
         for i in range(1, 12):
@@ -59,46 +59,67 @@ Filter 10: ON HSC Fc 16000 Hz Gain val_last dB Q q_factor_last"""
         self.headerbar.set_subtitle("for pipewire")
         self.set_titlebar(self.headerbar)
         
-        self.hz_list = ["32Hz", "63Hz", "125Hz", "250Hz", "500Hz", "1kHz", "2kHz", "4kHz", "8kHz", "16kHz", "Boost"]
+        self.hz_list = ["32", "63", "125", "250", "500", "1000", "2000", "4000", "8000", "16000", ""]
         self.qfactor_list = ["0.7", "0.5", "2.0", "1.0", "1.0", "2.0", "3.0", "2.0", "1.0", "0.7", "1.0"]
-
-        print(self.qfactor_list)
         
+        # q scale
         for i in range(1, 11):
-        
-            q_entry = Gtk.Entry(tooltip_markup="<b>Q-Factor</b>\nchange value for q-factor\n(use point e.g. 2.2)", width_chars=4)
-            q_entry.set_text(self.qfactor_list[i-1])
-            q_entry.connect("changed", self.qf_changed, i)
-            grid.attach(q_entry, i, 0, 1, 1)
-        
+            sld = Gtk.ScaleButton.new(1, 0.0, 8.0, 0.01)
+            #sld.set_icons(("gtk-go-down", "gtk-go-up"))
+            sld.set_label(self.qfactor_list[i -1])
+            sld.set_orientation(1)
+            sld.set_tooltip_markup("<b>Q-Factor</b>\nclick to change")
+            sld.set_value(float(self.qfactor_list[i-1]))
+            sld.connect("value-changed", self.qf_changed, i)
+            grid.attach(sld, i, 1, 1, 1)
+
+        # gain scale        
         for i in range(1, 12):
-            
-            sld = Gtk.Scale.new_with_range(1, -12.0, 12.0, 0.1)
+            sld = Gtk.Scale.new_with_range(1, -12.0, 12.0, 0.01)
+            sld.set_tooltip_markup("<b>Gain</b>")
             sld.set_inverted(True)
             sld.set_value(0)
             sld.set_name(f"sld_{i}")
             sld.connect("value-changed", self.val_changed, i)
-            grid.attach(sld, i, 1, 1, 10)
+            grid.attach(sld, i, 2, 1, 10)
+
+        # freq scale
+        for i in range(1, 11):
+            sld = Gtk.ScaleButton.new(1, 20, 16000, 0.1)
+            sld.set_label(self.hz_list[i -1])
+            sld.set_tooltip_markup("<b>Frequency</b>\nclick to change")
+            #sld.set_icons(("gtk-go-down", "gtk-go-up"))
+            sld.set_orientation(1)
+            sld.set_value(int(self.hz_list[i -1]))
+            sld.connect("value-changed", self.hz_changed, i)
+            grid.attach(sld, i, 12, 1, 1)
             
-            lbl = Gtk.Label(label=self.hz_list[i - 1])
-            lbl.set_name(f"lbl_{i}")
-            sld.set_tooltip_text(f"Gain Value for {self.hz_list[i - 1]}")
-            grid.attach(lbl, i, 11, 1, 1)
+        boost_lbl = Gtk.Label(label = "Boost")
+        grid.attach(boost_lbl, 11, 12, 1, 1)
         
         self.lbl = Gtk.Label(label = "Info", justify = 2)
-        grid.attach(self.lbl, 1, 12, 11, 1)
-
+        grid.attach(self.lbl, 1, 14, 11, 1)
         
-    def qf_changed(self, wdg, i, *args):
-        qf = wdg.get_text()
-        self.qfactor_list[i - 1] = f"{qf}"
-        #print(self.qfactor_list)
+        
+    def qf_changed(self, wdg, value, i, *args):
+        qf = value
+        self.qfactor_list[i - 1] = f"{qf:.1f}"
+        wdg.set_label(self.qfactor_list[i -1])
+        self.update_lbl(i)
+        
+    def hz_changed(self, wdg, value, i, *args):
+        qf = value
+        self.hz_list[i - 1] = f"{qf:.0f}"
+        wdg.set_label(self.hz_list[i -1])
+        self.update_lbl(i)
         
     def val_changed(self, wdg, i, *args):
         v = wdg.get_value()
-        name = wdg.get_name()
-        self.lbl.set_text(f"{self.hz_list[i-1]}: {v}db")
         self.value_list[i - 1] = f"{v}"
+        self.update_lbl(i)
+        
+    def update_lbl(self, i, *args):
+        self.lbl.set_text(f"{self.hz_list[i-1]}Hz * {self.value_list[i-1]}db * Q-Factor: {self.qfactor_list[i-1]}")
         
     def open_message_window(self, message, *args):
         dialog = Gtk.MessageDialog(
@@ -149,7 +170,18 @@ class Application(Gtk.Application):
                             .replace("q_factor_7", self.window.qfactor_list[6]) \
                             .replace("q_factor_8", self.window.qfactor_list[7]) \
                             .replace("q_factor_9", self.window.qfactor_list[8]) \
-                            .replace("q_factor_last", self.window.qfactor_list[9])
+                            .replace("q_factor_last", self.window.qfactor_list[9]) \
+                            .replace("freq_1", self.window.hz_list[0]) \
+                            .replace("freq_2", self.window.hz_list[1]) \
+                            .replace("freq_3", self.window.hz_list[2]) \
+                            .replace("freq_4", self.window.hz_list[3]) \
+                            .replace("freq_5", self.window.hz_list[4]) \
+                            .replace("freq_6", self.window.hz_list[5]) \
+                            .replace("freq_7", self.window.hz_list[6]) \
+                            .replace("freq_8", self.window.hz_list[7]) \
+                            .replace("freq_9", self.window.hz_list[8]) \
+                            .replace("freq_last", self.window.hz_list[9])                            
+                            
                             
         print(self.window.out_text)
                             
@@ -173,7 +205,6 @@ class Application(Gtk.Application):
         #   systemctl --user restart pipewire.service \n\
         # \n\n")
 
-        output_file = open("sink-eq10.conf", "a+")
 
         # Beginning of conf
         output_string += ('\
@@ -266,7 +297,9 @@ class Application(Gtk.Application):
         with open("sink-eq10.conf", "w") as f:
             f.write(output_string)
             
-        self.window.open_message_window("sink-eq10.conf saved in the script folder\n\nCopy the file 'sink-eq10.conf' to \n~/.config/pipewire/pipewire.conf.d")
+        #self.window.open_message_window("sink-eq10.conf saved in the script folder\n\nCopy the file 'sink-eq10.conf' to \n~/.config/pipewire/pipewire.conf.d")
+        
+        self.window.lbl.set_markup("<b>sink-eq10.conf</b> was saved in the script folder\nCopy the file <b>sink-eq10.conf</b> to the folder <b>~/.config/pipewire/pipewire.conf.d</b>")
         
     def quit_callback(self, action, parameter):
         self.quit()
