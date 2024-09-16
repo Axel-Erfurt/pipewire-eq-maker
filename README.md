@@ -16,8 +16,8 @@ or
 ```python3 pw_eq_maker_autoeq.py```
 
 - adjust the slider values for gain
-- you can change the Q-Factor above the slider (click to open popup)
-- you can change the frequency below the slider (click to open popup)
+- you can change the Q-Factor above the slider (click to open popup or use mouse wheel)
+- you can change the frequency below the slider (click to open popup or use mouse wheel)
 - choose ***Save*** from the menu at the headerbar
 
 >a file named sink-eq10.conf will be created in the script folder
