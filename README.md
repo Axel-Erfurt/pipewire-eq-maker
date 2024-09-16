@@ -5,8 +5,15 @@
 - python3-gi
 - pipewire
 
+> [!NOTE]
+> pw_eq_maker_autoeq.py is a version that can load [AutoEQ](https://www.autoeq.app/) Files (use EasyEffects on ***select equalizer app***)
+
 ### Usage
 ```python3 pw_eq_maker.py```
+
+or
+
+```python3 pw_eq_maker_autoeq.py```
 
 - adjust the slider values for gain
 - you can change the Q-Factor above the slider (click to open popup)
